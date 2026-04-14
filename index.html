@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es-cl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Repuesto Reparable | Envío a Reparación Externa</title>
+    <meta name="description" content="Formulario de envío de materiales para reparación externa - Sistema de Gestión de Materiales">
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="nav-bar">
+        <span class="nav-title">Repuesto Reparable</span>
+    </nav>
+
+    <main class="container">
+        <header class="header">
+            <div class="logo-area">
+                <span class="logo-icon">⚙️</span>
+                <h1>Solicitud de Reparación</h1>
+            </div>
+            <p class="subtitle">Gestión de envío de materiales a mantención externa</p>
+        </header>
+
+        <section class="glass-card">
+            <form id="repairForm" class="repair-form">
+                <div class="form-grid">
+                    <!-- Ordem de Manutenção -->
+                    <div class="form-group">
+                        <label for="om">Orden de Mantención (OM)</label>
+                        <div class="input-wrapper">
+                            <input type="text" id="om" name="om" placeholder="Ej: 40012345" required>
+                        </div>
+                    </div>
+
+                    <!-- Material con Autocomplete -->
+                    <div class="form-group">
+                        <label for="materialName">Nombre do Material</label>
+                        <div class="input-wrapper">
+                            <input type="text" id="materialName" name="materialName" list="materialsList" placeholder="Buscar material..." required>
+                            <datalist id="materialsList"></datalist>
+                        </div>
+                    </div>
+
+                    <!-- Código del Material (Solo lectura) -->
+                    <div class="form-group">
+                        <label for="materialCode">Código del Material</label>
+                        <div class="input-wrapper">
+                            <input type="text" id="materialCode" name="materialCode" placeholder="Auto-completado" readonly>
+                        </div>
+                    </div>
+
+                    <!-- Unidad de Medida (Select que se auto-completa) -->
+                    <div class="form-group">
+                        <label for="uom">Unidad de Medida (UM)</label>
+                        <div class="input-wrapper">
+                            <select id="uom" name="uom" required>
+                                <option value="" disabled selected>Seleccione...</option>
+                                <option value="UN">Unidad (UN)</option>
+                                <option value="KG">Kilogramo (KG)</option>
+                                <option value="M">Metro (M)</option>
+                                <option value="L">Litro (L)</option>
+                                <option value="PAR">Par (PAR)</option>
+                                <option value="OTRO">Otro</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Cantidad -->
+                    <div class="form-group">
+                        <label for="quantity">Cantidad</label>
+                        <div class="input-wrapper">
+                            <input type="number" id="quantity" name="quantity" min="0.01" step="any" placeholder="0.00" required>
+                        </div>
+                    </div>
+
+                    <!-- Peso -->
+                    <div class="form-group">
+                        <label for="weight">Peso Estimado (kg)</label>
+                        <div class="input-wrapper">
+                            <input type="number" id="weight" name="weight" min="0" step="0.01" placeholder="0.00" required>
+                        </div>
+                    </div>
+
+                    <!-- Proveedor con Autocomplete -->
+                    <div class="form-group">
+                        <label for="supplierName">Proveedor Sugerido</label>
+                        <div class="input-wrapper">
+                            <input type="text" id="supplierName" name="supplierName" list="suppliersList" placeholder="Sugerir proveedor..." required>
+                            <datalist id="suppliersList"></datalist>
+                        </div>
+                    </div>
+
+                    <!-- Código SAP Proveedor -->
+                    <div class="form-group">
+                        <label for="sapCode">Código SAP / ID (Sugerido)</label>
+                        <div class="input-wrapper">
+                            <input type="text" id="sapCode" name="sapCode" placeholder="ID Sugerido" readonly>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" id="submitBtn" class="btn-primary">
+                        <span class="btn-text">Enviar a Reparación</span>
+                        <div class="btn-loader"></div>
+                    </button>
+                    <button type="reset" class="btn-secondary">Limpiar</button>
+                </div>
+            </form>
+        </section>
+
+        <footer class="footer">
+            <p>&copy; 2026 CMPC | <a href="admin.html" style="color: var(--primary); text-decoration: none; font-weight: 500;">Panel Administrativo</a></p>
+        </footer>
+    </main>
+
+    <div id="toast" class="toast">
+        <div class="toast-content">
+            <span class="toast-icon">✅</span>
+            <div class="toast-message">
+                <strong>Enviado con éxito</strong>
+            </div>
+        </div>
+    </div>
+
+    <script src="main.js" type="module"></script>
+</body>
+</html>

@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="es-cl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Admin | Repuesto Reparable</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="admin-style.css">
+</head>
+<body class="admin-body">
+    <div id="loginOverlay" class="login-overlay">
+        <div class="glass-card login-card">
+            <h2>Acceso Admin</h2>
+            <p>Inicie sesión para gestionar el sistema.</p>
+            <button id="loginBtn" class="btn-primary">
+                <span class="btn-text">Entrar con Google</span>
+            </button>
+            <div id="errorMsg" class="error-text"></div>
+        </div>
+    </div>
+
+    <nav class="admin-nav">
+        <div class="logo-area">
+            <span class="logo-icon">⚙️</span>
+            <h1 class="nav-title">Dashboard</h1>
+        </div>
+        <div class="nav-links">
+            <button class="nav-tab active" data-target="workflow">Flujo</button>
+            <button class="nav-tab" data-target="suppliers">Proveedores</button>
+            <button class="nav-tab" data-target="materials">Materiales</button>
+            <button class="nav-tab" data-target="roles">Configuración</button>
+        </div>
+        <div class="user-info">
+            <span id="adminEmail"></span>
+            <button id="logoutBtn" class="btn-secondary btn-small">Salir</button>
+        </div>
+    </nav>
+
+    <main class="admin-container">
+        <!-- Dashboard Section -->
+        <section id="section-workflow" class="admin-section active">
+            <header class="admin-header">
+                <div>
+                    <h2>Flujo de Trabajo</h2>
+                    <p class="subtitle">Gestión de estados en tiempo real</p>
+                </div>
+            </header>
+
+            <div class="board-column-wrapper">
+                <!-- Stage 1: Solicitud -->
+                <div class="board-column" data-stage="solicitud">
+                    <div class="column-header">
+                        <h3>Solicitud (Sug.)</h3>
+                        <span class="countBadge">0</span>
+                    </div>
+                    <div class="card-list" id="list-solicitud"></div>
+                </div>
+
+                <!-- Stage 2: Emisión NF -->
+                <div class="board-column" data-stage="emision-nf">
+                    <div class="column-header">
+                        <h3>Emisión NF</h3>
+                        <span class="countBadge">0</span>
+                    </div>
+                    <div class="card-list" id="list-emision-nf"></div>
+                </div>
+
+                <!-- Stage 3: Proveedor -->
+                <div class="board-column" data-stage="proveedor">
+                    <div class="column-header">
+                        <h3>Proveedor</h3>
+                        <span class="countBadge">0</span>
+                    </div>
+                    <div class="card-list" id="list-proveedor"></div>
+                </div>
+
+                <!-- Stage 4: Propuesta -->
+                <div class="board-column" data-stage="propuesta">
+                    <div class="column-header">
+                        <h3>Propuesta</h3>
+                        <span class="countBadge">0</span>
+                    </div>
+                    <div class="card-list" id="list-propuesta"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Suppliers Section -->
+        <section id="section-suppliers" class="admin-section">
+            <header class="admin-header">
+                <h2>Proveedores</h2>
+                <div class="header-actions">
+                    <button id="bulkSupplierBtn" class="btn-secondary btn-small">Carga Masiva</button>
+                    <button id="addSupplierBtn" class="btn-primary btn-small">+ Nuevo</button>
+                </div>
+            </header>
+            <div class="glass-card">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>ID / SAP</th>
+                            <th>Acceso</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="supplierTableBody"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Materials Section -->
+        <section id="section-materials" class="admin-section">
+            <header class="admin-header">
+                <h2>Materiales</h2>
+                <div class="header-actions">
+                    <button id="bulkMaterialBtn" class="btn-secondary btn-small">Carga Masiva</button>
+                    <button id="addMaterialBtn" class="btn-primary btn-small">+ Nuevo</button>
+                </div>
+            </header>
+            <div class="glass-card">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Nombre</th>
+                            <th>UM</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="materialTableBody"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Roles/Config Section -->
+        <section id="section-roles" class="admin-section">
+            <header class="admin-header">
+                <div>
+                    <h2>Configuración de Papéis</h2>
+                    <p class="subtitle">E-mails responsables por cada etapa del flujo</p>
+                </div>
+            </header>
+            <div class="board-column-wrapper" id="rolesGrid">
+                <!-- Cards for each stage will be injected here -->
+            </div>
+        </section>
+    </main>
+
+
+    <!-- Modal for Supplier -->
+    <div id="supplierModal" class="modal">
+        <div class="modal-content glass-card">
+            <span class="close-btn">&times;</span>
+            <form id="supplierForm" class="repair-form">
+                <h3>Datos del Proveedor</h3>
+                <div class="form-group">
+                    <label>Nombre Empresa</label>
+                    <input type="text" name="name" placeholder="Ej: Aceros S.A." required>
+                </div>
+                <div class="form-group">
+                    <label>ID Interno / Código SAP</label>
+                    <input type="text" name="sapCode" placeholder="Ej: SAP-001" required>
+                </div>
+                <div class="form-group">
+                    <label>Correo de Acceso (Google)</label>
+                    <input type="email" name="email" placeholder="proveedor@gmail.com" required>
+                </div>
+                <button type="submit" class="btn-primary">Guardar Proveedor</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal for Material -->
+    <div id="materialModal" class="modal">
+        <div class="modal-content glass-card">
+            <span class="close-btn">&times;</span>
+            <form id="materialForm" class="repair-form">
+                <h3>Datos del Material</h3>
+                <div class="form-group">
+                    <label>Código del Material</label>
+                    <input type="text" name="code" placeholder="Ej: MAT-01" required>
+                </div>
+                <div class="form-group">
+                    <label>Nombre del Material</label>
+                    <input type="text" name="name" placeholder="Ej: Rodamiento XL" required>
+                </div>
+                <div class="form-group">
+                    <label>Unidad de Medida (UM)</label>
+                    <input type="text" name="uom" placeholder="Ej: UN, KG, M" required>
+                </div>
+                <button type="submit" class="btn-primary">Guardar Material</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal for Bulk Import -->
+    <div id="bulkModal" class="modal">
+        <div class="modal-content glass-card big-modal">
+            <span class="close-btn">&times;</span>
+            <div class="bulk-header">
+                <h3 id="bulkTitle">Carga Masiva</h3>
+                <p id="bulkInstructions"></p>
+            </div>
+            <textarea id="bulkTextarea" placeholder="Pega aquí tus datos de Excel..."></textarea>
+            <div class="bulk-footer">
+                <span id="bulkStatus" class="status-info"></span>
+                <button id="processBulkBtn" class="btn-primary">Procesar Carga</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for details -->
+    <div id="detailsModal" class="modal">
+        <div class="modal-content glass-card">
+            <span class="close-btn">&times;</span>
+            <div id="modalBody">
+                <!-- Details injected here -->
+            </div>
+            <div class="modal-actions">
+                <button id="nextStageBtn" class="btn-primary">Siguiente Etapa</button>
+                <div class="decision-btns" style="display: none;">
+                    <button id="acceptBtn" class="btn-success">Aceptar Propuesta</button>
+                    <button id="rejectBtn" class="btn-danger">Rechazar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Role (Responsável) -->
+    <div id="roleModal" class="modal">
+        <div class="modal-content glass-card">
+            <span class="close-btn">&times;</span>
+            <form id="roleForm" class="repair-form">
+                <h3>Agregar Responsable</h3>
+                <input type="hidden" id="roleStageId" name="stageId">
+                <div class="form-group">
+                    <label>Nombre del Responsable</label>
+                    <input type="text" name="name" placeholder="Ej: Juan Perez" required>
+                </div>
+                <div class="form-group">
+                    <label>E-mail (Notificaciones)</label>
+                    <input type="email" name="email" placeholder="juan@cmpc.com" required>
+                </div>
+                <button type="submit" class="btn-primary">Asociar al Flujo</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="src/admin-main.js" type="module"></script>
+</body>
+</html>
