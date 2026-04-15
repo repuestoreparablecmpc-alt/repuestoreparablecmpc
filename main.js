@@ -24,12 +24,15 @@ async function uploadToCloudinary(file) {
     formData.append('upload_preset', CLOUDINARY_PRESET);
     formData.append('folder', 'repuesto-reparable');
 
-    const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/auto/upload`, {
+    const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`, {
         method: 'POST',
         body: formData
     });
 
-    if (!res.ok) throw new Error('Cloudinary upload failed');
+    if (!res.ok) {
+        const errText = await res.text();
+        throw new Error(`Cloudinary error ${res.status}: ${errText}`);
+    }
     const json = await res.json();
     return json.secure_url;
 }
@@ -222,7 +225,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const attachmentFile = document.getElementById('attachment').files[0];
             
             if (attachmentFile) {
-                attachmentUrl = await uploadToCloudinary(attachmentFile);
+                try {
+                    attachmentUrl = await uploadToCloudinary(attachmentFile);
+                } catch (uploadErr) {
+                    console.warn('Upload de arquivo falhou, continuando sem anexo:', uploadErr.message);
+                }
             }
 
             if (db) {
