@@ -473,12 +473,63 @@ button {
 .loading .btn-text { display: none; }
 .loading .btn-loader { display: block; }
 
-/* Mobile Adjustments */
+/* ─── RESPONSIVE ──────────────────────────────── */
+
+/* Tablet (≤ 900px): 2 colunas */
+@media (max-width: 900px) {
+    .container { width: 98%; padding: 1rem; }
+    .form-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* Mobile (≤ 600px): 1 coluna */
 @media (max-width: 600px) {
-    .container { padding: 1rem; }
-    .header h1 { font-size: 28px; }
-    .form-actions { flex-direction: column; }
-    button { width: 100%; }
+    body { padding-top: var(--navbar-height); }
+
+    .container { padding: 0.75rem; }
+
+    /* Navbar */
+    .nav-bar { justify-content: flex-start; padding: 0 1rem; }
+    .nav-title { font-size: 14px; }
+
+    /* Form header */
+    .header { margin: 0.5rem 0 1rem; }
+    .header h1 { font-size: 22px; }
+    .subtitle { font-size: 13px; }
+
+    /* Grid: 1 coluna no mobile */
+    .form-grid { grid-template-columns: 1fr; gap: 0.75rem; }
+
+    /* Card do form */
+    .glass-card { padding: 14px; border-radius: 12px; }
+
+    /* Inputs maiores para touch */
+    input, select, textarea {
+        padding: 14px 16px;
+        font-size: 16px; /* evita zoom automático no iOS */
+    }
+
+    /* Botões */
+    .form-actions { flex-direction: column; gap: 0.75rem; }
+    .form-actions button { width: 100%; }
+    .btn-back { font-size: 13px; }
+
+    /* Toast */
+    .toast { left: 1rem; right: 1rem; width: auto; bottom: 1rem; }
+
+    /* Landing card */
+    .landing-card {
+        width: 92%;
+        padding: 1.5rem;
+    }
+    .landing-card h1 { font-size: 1.5rem; }
+    .landing-card p { font-size: 0.95rem; margin-bottom: 1.5rem; }
+    .btn-xl { width: 100%; justify-content: center; padding: 16px 24px; font-size: 1rem; }
+}
+
+/* Extra small (≤ 380px) */
+@media (max-width: 380px) {
+    .header h1 { font-size: 18px; }
+    .form-group label { font-size: 12px; }
 }
 
 /* Landing View Styles */

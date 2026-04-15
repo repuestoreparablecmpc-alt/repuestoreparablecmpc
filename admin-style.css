@@ -400,3 +400,47 @@
     font-size: 13px;
     opacity: 0.9;
 }
+
+/* ─── ADMIN RESPONSIVE ──────────────────────────── */
+
+/* Tablet (≤ 900px) */
+@media (max-width: 900px) {
+    .admin-nav { padding: 0 1rem; }
+    .nav-links { gap: 0.25rem; overflow-x: auto; }
+    .nav-tab { padding: 0.4rem 0.75rem; font-size: 13px; white-space: nowrap; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* Mobile (≤ 600px) */
+@media (max-width: 600px) {
+    .admin-nav {
+        flex-wrap: wrap;
+        height: auto;
+        padding: 0.5rem 1rem;
+        gap: 0.5rem;
+    }
+    .nav-links {
+        width: 100%;
+        overflow-x: auto;
+        padding-bottom: 4px;
+        -webkit-overflow-scrolling: touch;
+    }
+    .nav-tab { font-size: 12px; padding: 0.4rem 0.6rem; }
+    .login-card { padding: 1.5rem; width: 92%; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+    .requests-table, .kanban-board { display: block; overflow-x: auto; }
+    .request-card { padding: 12px; border-radius: 12px; }
+    .request-card-header { flex-wrap: wrap; gap: 0.5rem; }
+    .detail-grid { grid-template-columns: 1fr !important; }
+    .detail-panel { width: 100% !important; padding: 1rem; }
+    .action-buttons { flex-direction: column; }
+    .action-buttons button { width: 100%; }
+    .admin-content { padding: 1rem; }
+    .section-header { flex-wrap: wrap; gap: 0.5rem; }
+}
+
+/* Extra small (≤ 380px) */
+@media (max-width: 380px) {
+    .stats-grid { grid-template-columns: 1fr; }
+    .nav-tab { font-size: 11px; padding: 0.3rem 0.5rem; }
+}
