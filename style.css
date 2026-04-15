@@ -1,7 +1,7 @@
 :root {
-    /* Nature Palette - Green CMPC Style */
-    --primary: #4cd964;
-    --primary-rgb: 76, 217, 100;
+    /* Nature Palette - CMPC Corporate Green */
+    --primary: #76b82a;
+    --primary-rgb: 118, 184, 42;
     --background: #f8f9fa;
     --surface: #ffffff;
     --surface-variant: #f0f2f5;
@@ -47,6 +47,7 @@ body {
     color: var(--text-primary);
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
+    padding-top: var(--navbar-height); /* Exato, sem excesso */
 }
 
 /* Background - Simple & Clean */
@@ -54,22 +55,101 @@ body {
     display: none; /* Removendo blobs para minimalismo */
 }
 
+/* Custom Select Components */
+.custom-select {
+    position: relative;
+    width: 100%;
+    user-select: none;
+}
+
+.select-trigger {
+    background: var(--surface-variant);
+    border: 1px solid transparent;
+    border-radius: var(--radius-pill);
+    padding: 12px 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 14px;
+    color: var(--text-primary);
+}
+
+.custom-select.active .select-trigger {
+    background: var(--surface);
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(var(--primary-rgb), 0.1);
+}
+
+.select-trigger svg {
+    transition: transform 0.3s ease;
+    color: var(--text-secondary);
+}
+
+.custom-select.active .select-trigger svg {
+    transform: rotate(180deg);
+}
+
+.select-options {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    width: 100%;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+    z-index: 100;
+    overflow: hidden;
+}
+
+.custom-select.active .select-options {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.option {
+    padding: 12px 18px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.2s;
+}
+
+.option:hover {
+    background: #f0fff4;
+    color: var(--primary);
+}
+
+.option.selected {
+    background: #e6ffed;
+    color: var(--primary);
+    font-weight: 600;
+}
+
 .container {
-    max-width: 800px;
+    max-width: 1100px;
+    width: 95%;
     margin: 0 auto;
-    padding: 2rem 1rem;
+    padding: 1rem 1.5rem 3rem;
 }
 
 /* Header / Navbar */
 .nav-bar {
     height: var(--navbar-height);
-    position: sticky;
+    position: fixed;
     top: 0;
+    left: 0;
     width: 100%;
     background: var(--surface);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     border-bottom: 1px solid var(--outline-variant);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -82,9 +162,16 @@ body {
     color: var(--text-primary);
 }
 
+.main-wrapper {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    min-height: calc(100vh - 80px);
+}
+
 .header {
     text-align: left;
-    margin: 2.5rem 0 1.5rem 0;
+    margin: 0 0 1.5rem 0;
 }
 
 .header h1 {
@@ -119,7 +206,7 @@ body {
 
 .form-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
     gap: 1rem;
 }
 
@@ -141,7 +228,43 @@ body {
     width: 100%;
 }
 
-input, select {
+.btn-clear {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s;
+    opacity: 0.4;
+}
+
+.btn-clear:hover {
+    background: rgba(0,0,0,0.05);
+    color: var(--error);
+    opacity: 1;
+}
+
+.trigger-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.trigger-actions .btn-clear {
+    position: static;
+    transform: none;
+    padding: 2px;
+}
+
+input, select, textarea {
     width: 100%;
     background: var(--surface-variant);
     border: 1px solid transparent;
@@ -151,13 +274,76 @@ input, select {
     font-family: inherit;
     font-size: 14px;
     transition: all 0.2s ease;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
 }
 
-input:focus, select:focus {
+select {
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2344474e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 18px center;
+    padding-right: 42px !important;
+}
+
+textarea {
+    border-radius: 16px; /* Menos arredondado que o pill pra textarea */
+    min-height: 80px;
+    resize: vertical;
+}
+
+input:focus, select:focus, textarea:focus {
     outline: none;
     background: var(--surface);
     border-color: var(--primary);
     box-shadow: 0 0 0 4px rgba(var(--primary-rgb), 0.1);
+}
+
+/* Custom File Upload */
+.file-upload-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.file-upload-label {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--surface-variant);
+    padding: 20px;
+    border: 2px dashed var(--outline-variant);
+    border-radius: 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: var(--text-secondary);
+    font-size: 14px;
+    justify-content: center;
+}
+
+.file-icon-svg {
+    stroke: var(--primary);
+    opacity: 0.8;
+}
+
+.file-upload-label:hover {
+    border-color: var(--primary);
+    background: #f0fff4;
+    color: var(--primary);
+}
+
+.file-icon {
+    font-size: 1.2rem;
+}
+
+.file-input-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
 }
 
 input[readonly] {
@@ -293,4 +479,119 @@ button {
     .header h1 { font-size: 28px; }
     .form-actions { flex-direction: column; }
     button { width: 100%; }
+}
+
+/* Landing View Styles */
+#view-landing {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+    width: 100%;
+    background-image: url('landing-bg.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    position: relative;
+}
+
+#view-landing::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.20);
+    z-index: 0;
+}
+
+#view-landing .landing-card {
+    position: relative;
+    z-index: 1;
+}
+
+.landing-card {
+    max-width: 560px;
+    width: 90%;
+    padding: 2rem 2.5rem;
+    text-align: center;
+}
+
+.cmpc-logo-placeholder {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--primary);
+    margin-bottom: 1.5rem;
+    letter-spacing: -1px;
+}
+
+.badge-new {
+    background: #e6ffed;
+    color: var(--primary);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 1rem;
+    display: inline-block;
+}
+
+.landing-card h1 {
+    font-size: 2.2rem;
+    margin-bottom: 1rem;
+    line-height: 1.2;
+}
+
+.landing-card p {
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+    margin-bottom: 2.5rem;
+}
+
+.btn-xl {
+    padding: 18px 36px;
+    font-size: 1.1rem;
+    border-radius: 40px;
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 600;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    background: var(--primary);
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-xl:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+.btn-back {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 1.5rem;
+    padding: 8px 0;
+}
+
+.btn-back:hover {
+    color: var(--primary);
+}
+
+.animate-in {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
 }

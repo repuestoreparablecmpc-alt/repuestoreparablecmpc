@@ -1,16 +1,19 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 import firebaseConfig from "./src/firebase-config.js";
+import { notifyStage } from "./src/notifications.js";
 
 // Initialize Firebase
-let db;
+let db, storage;
 try {
     if (firebaseConfig.apiKey !== "PEGAR_AQUI") {
         const app = initializeApp(firebaseConfig);
         db = getFirestore(app);
+        storage = getStorage(app);
     }
 } catch (e) {
-    console.warn("Firestore not initialized.");
+    console.warn("Firebase services not initialized.");
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -28,6 +31,71 @@ document.addEventListener('DOMContentLoaded', () => {
     // Master data arrays
     let materialsData = [];
     let suppliersData = [];
+
+    // Navigation between Landing and Form
+    function initNavigation() {
+        const landingView = document.getElementById('view-landing');
+        const formView = document.getElementById('view-form');
+        const startBtn = document.getElementById('startBtn');
+        const backBtn = document.getElementById('backBtn');
+
+        if (startBtn && backBtn) {
+            startBtn.addEventListener('click', () => {
+                landingView.style.display = 'none';
+                formView.style.display = 'block';
+                
+                // Absolute scroll reset after render
+                requestAnimationFrame(() => {
+                    window.scrollTo(0, 0);
+                    document.documentElement.scrollTop = 0;
+                });
+            });
+
+            backBtn.addEventListener('click', () => {
+                formView.style.display = 'none';
+                landingView.style.display = 'flex';
+                requestAnimationFrame(() => {
+                    window.scrollTo(0, 0);
+                });
+            });
+        }
+    }
+
+    // Logic for Reset Buttons (Borrachinha)
+    function initClearButtons() {
+        document.querySelectorAll('.btn-clear').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation(); // Prevent opening custom selects
+                const targetId = btn.getAttribute('data-target');
+                const targetEl = document.getElementById(targetId);
+                
+                if (targetEl) {
+                    targetEl.value = "";
+                    targetEl.dispatchEvent(new Event('input'));
+                    targetEl.dispatchEvent(new Event('change'));
+
+                    if (targetId === 'materialName') {
+                        document.getElementById('materialCode').value = "";
+                        document.getElementById('uom').value = "";
+                    }
+                    if (targetId === 'supplierName') {
+                        document.getElementById('sapCode').value = "";
+                    }
+
+                    const customWrapper = targetEl.closest('.custom-select');
+                    if (customWrapper) {
+                        const text = customWrapper.querySelector('.selected-text');
+                        if (targetId === 'uom') text.textContent = "Seleccione...";
+                        if (targetId === 'category') text.textContent = "Seleccione una categoría";
+                        customWrapper.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+                    }
+                }
+            });
+        });
+    }
+
+    initNavigation();
+    initClearButtons();
 
     // Fetch Master Data
     if (db) {
@@ -76,34 +144,85 @@ document.addEventListener('DOMContentLoaded', () => {
         sapCodeInput.value = selected ? selected.sapCode : "";
     });
 
+    // Logic for Custom Selects
+    function initCustomSelects() {
+        document.querySelectorAll('.custom-select').forEach(wrapper => {
+            const trigger = wrapper.querySelector('.select-trigger');
+            const options = wrapper.querySelectorAll('.option');
+            const hiddenSelect = wrapper.querySelector('select');
+            const selectedText = wrapper.querySelector('.selected-text');
+
+            trigger.addEventListener('click', () => {
+                // Close other selects
+                document.querySelectorAll('.custom-select').forEach(other => {
+                    if (other !== wrapper) other.classList.remove('active');
+                });
+                wrapper.classList.toggle('active');
+            });
+
+            options.forEach(opt => {
+                opt.addEventListener('click', () => {
+                    const val = opt.getAttribute('data-value');
+                    hiddenSelect.value = val;
+                    selectedText.textContent = opt.textContent;
+                    
+                    options.forEach(o => o.classList.remove('selected'));
+                    opt.classList.add('selected');
+                    wrapper.classList.remove('active');
+
+                    // Trigger change event for auto-fill logic if needed
+                    hiddenSelect.dispatchEvent(new Event('change'));
+                });
+            });
+        });
+
+        // Close when clicking outside
+        window.addEventListener('click', (e) => {
+            if (!e.target.closest('.custom-select')) {
+                document.querySelectorAll('.custom-select').forEach(w => w.classList.remove('active'));
+            }
+        });
+    }
+
+    initCustomSelects();
+
     /**
      * Handles the form submission
      */
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        if (!repairForm.checkValidity()) {
-            repairForm.reportValidity();
-            return;
-        }
-
-        submitBtn.classList.add('loading');
-        submitBtn.disabled = true;
-
         const formData = new FormData(repairForm);
         const data = Object.fromEntries(formData.entries());
-        
-        const payload = {
-            ...data,
-            stage: 'solicitud',
-            createdAt: serverTimestamp(),
-            updatedAt: serverTimestamp(),
-            status: 'active'
-        };
+        const submitBtn = repairForm.querySelector('button[type="submit"]');
 
         try {
+            submitBtn.classList.add('loading');
+            submitBtn.disabled = true;
+
+            let attachmentUrl = null;
+            const attachmentFile = document.getElementById('attachment').files[0];
+            
+            if (attachmentFile && storage) {
+                const storageRef = ref(storage, `attachments/${Date.now()}_${attachmentFile.name}`);
+                const snapshot = await uploadBytes(storageRef, attachmentFile);
+                attachmentUrl = await getDownloadURL(snapshot.ref);
+            }
+
             if (db) {
+                const payload = {
+                    ...data,
+                    attachmentUrl,
+                    repairCost: 0, // Inicialmente zero
+                    stage: 'solicitud',
+                    createdAt: serverTimestamp(),
+                    updatedAt: serverTimestamp(),
+                    status: 'active'
+                };
+
                 await addDoc(collection(db, "requests"), payload);
+                // Notificar responsáveis da etapa de Manutenção (primeira etapa técnica)
+                notifyStage(db, 'manutencion', payload);
             } else {
                 console.warn("Firebase no configurado. Simulando envío...");
                 await new Promise(resolve => setTimeout(resolve, 1500));
@@ -111,6 +230,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
             showToast();
             repairForm.reset();
+            document.getElementById('fileNameDisplay').textContent = "Escolher archivo o arrastrar aquí...";
+            // Reset custom selects
+            document.querySelectorAll('.selected-text').forEach(st => {
+                if (st.closest('#custom-uom')) st.textContent = "Seleccione...";
+                if (st.closest('#custom-category')) st.textContent = "Seleccione una categoría";
+            });
+            document.querySelectorAll('.option').forEach(opt => opt.classList.remove('selected'));
+            
+            // Return to landing after pulse
+            setTimeout(() => {
+                formView.style.display = 'none';
+                landingView.style.display = 'flex';
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }, 2000);
+            
         } catch (error) {
             console.error('Error al enviar solicitud:', error);
             alert("Hubo un error al enviar la solicitud.");
@@ -124,6 +258,16 @@ document.addEventListener('DOMContentLoaded', () => {
         toast.classList.add('active');
         setTimeout(() => toast.classList.remove('active'), 5000);
     };
+
+    // File name feedback logic
+    const attachmentInput = document.getElementById('attachment');
+    const fileNameDisplay = document.getElementById('fileNameDisplay');
+    if (attachmentInput && fileNameDisplay) {
+        attachmentInput.addEventListener('change', (e) => {
+            const fileName = e.target.files[0]?.name || "Escolher archivo o arrastrar aquí...";
+            fileNameDisplay.textContent = fileName;
+        });
+    }
 
     repairForm.addEventListener('submit', handleSubmit);
 });

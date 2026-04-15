@@ -1,11 +1,12 @@
-import { loginWithGoogle, logout, onAuth } from "./auth.js";
-import { getFirestore, collection, onSnapshot, doc, updateDoc, addDoc, deleteDoc, query, orderBy, writeBatch, setDoc, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-import { auth } from "./auth.js"; 
+import { getFirestore, collection, onSnapshot, doc, updateDoc, addDoc, deleteDoc, query, orderBy, writeBatch, setDoc, arrayUnion, arrayRemove, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { loginWithGoogle, logout, onAuth, auth } from "./auth.js"; 
+import { notifyStage } from "./notifications.js";
 
 const db = getFirestore(auth.app);
 
 const STAGES = {
     SOLICITUD: 'solicitud',
+    MANUTENCION: 'manutencion',
     EMISION_NF: 'emision-nf',
     PROVEEDOR: 'proveedor',
     PROPUESTA: 'propuesta'
@@ -388,18 +389,79 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Details/Workflow
     let currentSelectedId = null, currentSelectedData = null;
-    function showDetails(id, data) {
+    async function showDetails(id, data) {
         currentSelectedId = id; currentSelectedData = data;
         const isSolicitud = data.stage === STAGES.SOLICITUD;
+        const alertContainer = document.getElementById('alertContainer');
+        const extraInputs = document.getElementById('extraInputs');
+        const inputRepairCost = document.getElementById('inputRepairCost');
+        
+        alertContainer.innerHTML = "";
+        extraInputs.style.display = (data.stage === STAGES.PROVEEDOR || data.stage === STAGES.PROPUESTA) ? 'block' : 'none';
+        inputRepairCost.value = data.repairCost || "";
+
         modals.details.style.display = "flex";
+        
+        // Render Details
         document.getElementById('modalBody').innerHTML = `
             <h3>Detalles de Solicitud</h3>
-            <p><strong>OM:</strong> ${data.om}</p>
-            <p><strong>Material:</strong> ${data.materialName} (${data.materialCode})</p>
-            <p><strong>${isSolicitud ? 'Proveedor Sugerido' : 'Proveedor'}:</strong> ${data.supplierName} (${data.sapCode})</p>
-            <p><strong>UM:</strong> ${data.uom} | <strong>Cant:</strong> ${data.quantity}</p>
-            <p><strong>Estado Actual:</strong> <span class="badge">${data.stage.toUpperCase()}</span></p>
+            <div class="details-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 14px;">
+                <p><strong>OM:</strong> ${data.om}</p>
+                <p><strong>Categoría:</strong> ${data.category || 'N/A'}</p>
+                <p><strong>TAG/Identificación:</strong> <span class="badge-tag">${data.tag || 'N/A'}</span></p>
+                <p><strong>Nº Inventario:</strong> ${data.inventoryNumber || 'N/A'}</p>
+                <p><strong>Material:</strong> ${data.materialName} (${data.materialCode})</p>
+                <p><strong>${isSolicitud ? 'Proveedor Sugerido' : 'Proveedor'}:</strong> ${data.supplierName} (${data.sapCode})</p>
+                <p><strong>Cant:</strong> ${data.quantity} ${data.uom}</p>
+                <p><strong>Valor Estimado (Equip. Nuevo):</strong> USD ${parseFloat(data.estimatedValue || 0).toLocaleString()}</p>
+                <p><strong>Local de Coleta:</strong> ${data.collectionLocation || 'N/A'}</p>
+                <p><strong>Estado Actual:</strong> <span class="badge">${data.stage.toUpperCase()}</span></p>
+                ${data.attachmentUrl ? `<p style="grid-column: span 2;"><strong>Anexo:</strong> <a href="${data.attachmentUrl}" target="_blank" class="btn-secondary btn-small">Visualizar Archivo 📎</a></p>` : ''}
+            </div>
         `;
+
+        // Check Frequency (TAG Reincidence)
+        if (data.tag) {
+            const q = query(collection(db, "requests"), where("tag", "==", data.tag));
+            const querySnapshot = await getDocs(q);
+            if (querySnapshot.size >= 3) {
+                alertContainer.innerHTML += `
+                    <div class="smart-alert smart-alert-warning">
+                        <div class="smart-alert-icon">⚠️</div>
+                        <div class="smart-alert-content">
+                            <h4>Equipamiento Reincidente (TAG)</h4>
+                            <p>Este TAG [${data.tag}] ha aparecido <strong>${querySnapshot.size} veces</strong>. Se recomienda una revisión técnica del activo.</p>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // Check 70% Cost Alert
+        const checkCostAlert = () => {
+            const cost = parseFloat(inputRepairCost.value) || 0;
+            const estimated = parseFloat(data.estimatedValue) || 0;
+            const existingCostAlert = document.getElementById('costAlert');
+            if (existingCostAlert) existingCostAlert.remove();
+
+            if (cost > 0 && estimated > 0 && cost >= (estimated * 0.7)) {
+                const div = document.createElement('div');
+                div.id = 'costAlert';
+                div.className = 'smart-alert smart-alert-danger';
+                div.innerHTML = `
+                    <div class="smart-alert-icon">🛑</div>
+                    <div class="smart-alert-content">
+                        <h4>Alerta de Viabilidad</h4>
+                        <p>El costo de reparación (USD ${cost}) supera el <strong>70%</strong> del valor estimado del equipo nuevo (USD ${estimated}). Evalúe el descarte o sustitución.</p>
+                    </div>
+                `;
+                alertContainer.prepend(div);
+            }
+        };
+
+        inputRepairCost.oninput = checkCostAlert;
+        checkCostAlert();
+
         const nextBtn = document.getElementById('nextStageBtn');
         const decPanel = document.querySelector('.decision-btns');
         if (data.stage === STAGES.PROPUESTA) {
@@ -410,9 +472,23 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     document.getElementById('nextStageBtn').onclick = async () => {
-        const nextMap = { [STAGES.SOLICITUD]: STAGES.EMISION_NF, [STAGES.EMISION_NF]: STAGES.PROVEEDOR, [STAGES.PROVEEDOR]: STAGES.PROPUESTA };
-        if (nextMap[currentSelectedData.stage]) {
-            await updateDoc(doc(db, "requests", currentSelectedId), { stage: nextMap[currentSelectedData.stage], updatedAt: new Date() });
+        const nextMap = { 
+            [STAGES.SOLICITUD]: STAGES.MANUTENCION, 
+            [STAGES.MANUTENCION]: STAGES.EMISION_NF,
+            [STAGES.EMISION_NF]: STAGES.PROVEEDOR, 
+            [STAGES.PROVEEDOR]: STAGES.PROPUESTA 
+        };
+        const nextStage = nextMap[currentSelectedData.stage];
+        const repairCost = parseFloat(document.getElementById('inputRepairCost').value) || 0;
+
+        if (nextStage) {
+            await updateDoc(doc(db, "requests", currentSelectedId), { 
+                stage: nextStage, 
+                repairCost: repairCost,
+                updatedAt: new Date() 
+            });
+            // Notificar responsáveis da nova etapa
+            notifyStage(db, nextStage, currentSelectedData);
             modals.details.style.display = "none";
         }
     };
@@ -421,7 +497,12 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('rejectBtn').onclick = () => finishRequest('rechazado');
 
     async function finishRequest(status) {
-        await updateDoc(doc(db, "requests", currentSelectedId), { status, updatedAt: new Date() });
+        const repairCost = parseFloat(document.getElementById('inputRepairCost').value) || 0;
+        await updateDoc(doc(db, "requests", currentSelectedId), { 
+            status, 
+            repairCost,
+            updatedAt: new Date() 
+        });
         modals.details.style.display = "none";
     }
 });

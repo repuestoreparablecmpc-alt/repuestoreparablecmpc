@@ -14,107 +14,224 @@
 <body>
     <nav class="nav-bar">
         <span class="nav-title">Repuesto Reparable</span>
-    </nav>
-
-    <main class="container">
-        <header class="header">
-            <div class="logo-area">
-                <span class="logo-icon">⚙️</span>
-                <h1>Solicitud de Reparación</h1>
+        </nav>
+    <main class="main-wrapper">
+        <!-- Landing View -->
+        <div id="view-landing" class="animate-in">
+            <div class="landing-card glass-card">
+                <div class="landing-content">
+                    <h1>Solicitud de Reparación de Repuestos</h1>
+                    <p>Bienvenido al portal de gestión de manutenção externa. Agilice el envío y monitoreo de sus materiales reparáveis.</p>
+                    
+                    <div class="landing-actions">
+                        <button id="startBtn" class="btn-xl">
+                            <span>Nueva Solicitud</span>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                        </button>
+                    </div>
+                </div>
             </div>
-            <p class="subtitle">Gestión de envío de materiales a mantención externa</p>
-        </header>
+        </div>
 
-        <section class="glass-card">
-            <form id="repairForm" class="repair-form">
-                <div class="form-grid">
-                    <!-- Ordem de Manutenção -->
-                    <div class="form-group">
-                        <label for="om">Orden de Mantención (OM)</label>
-                        <div class="input-wrapper">
-                            <input type="text" id="om" name="om" placeholder="Ej: 40012345" required>
-                        </div>
-                    </div>
-
-                    <!-- Material con Autocomplete -->
-                    <div class="form-group">
-                        <label for="materialName">Nombre do Material</label>
-                        <div class="input-wrapper">
-                            <input type="text" id="materialName" name="materialName" list="materialsList" placeholder="Buscar material..." required>
-                            <datalist id="materialsList"></datalist>
-                        </div>
-                    </div>
-
-                    <!-- Código del Material (Solo lectura) -->
-                    <div class="form-group">
-                        <label for="materialCode">Código del Material</label>
-                        <div class="input-wrapper">
-                            <input type="text" id="materialCode" name="materialCode" placeholder="Auto-completado" readonly>
-                        </div>
-                    </div>
-
-                    <!-- Unidad de Medida (Select que se auto-completa) -->
-                    <div class="form-group">
-                        <label for="uom">Unidad de Medida (UM)</label>
-                        <div class="input-wrapper">
-                            <select id="uom" name="uom" required>
-                                <option value="" disabled selected>Seleccione...</option>
-                                <option value="UN">Unidad (UN)</option>
-                                <option value="KG">Kilogramo (KG)</option>
-                                <option value="M">Metro (M)</option>
-                                <option value="L">Litro (L)</option>
-                                <option value="PAR">Par (PAR)</option>
-                                <option value="OTRO">Otro</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- Cantidad -->
-                    <div class="form-group">
-                        <label for="quantity">Cantidad</label>
-                        <div class="input-wrapper">
-                            <input type="number" id="quantity" name="quantity" min="0.01" step="any" placeholder="0.00" required>
-                        </div>
-                    </div>
-
-                    <!-- Peso -->
-                    <div class="form-group">
-                        <label for="weight">Peso Estimado (kg)</label>
-                        <div class="input-wrapper">
-                            <input type="number" id="weight" name="weight" min="0" step="0.01" placeholder="0.00" required>
-                        </div>
-                    </div>
-
-                    <!-- Proveedor con Autocomplete -->
-                    <div class="form-group">
-                        <label for="supplierName">Proveedor Sugerido</label>
-                        <div class="input-wrapper">
-                            <input type="text" id="supplierName" name="supplierName" list="suppliersList" placeholder="Sugerir proveedor..." required>
-                            <datalist id="suppliersList"></datalist>
-                        </div>
-                    </div>
-
-                    <!-- Código SAP Proveedor -->
-                    <div class="form-group">
-                        <label for="sapCode">Código SAP / ID (Sugerido)</label>
-                        <div class="input-wrapper">
-                            <input type="text" id="sapCode" name="sapCode" placeholder="ID Sugerido" readonly>
-                        </div>
-                    </div>
+        <!-- Form View (Hidden initially) -->
+        <div id="view-form" class="container animate-in" style="display: none;">
+            <header class="header">
+                <button id="backBtn" class="btn-back">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                    <span>Volver</span>
+                </button>
+                <div class="logo-area">
+                    <span class="logo-icon">⚙️</span>
+                    <h1>Detalles de la Solicitud</h1>
                 </div>
+                <p class="subtitle">Complete los datos técnicos para el envío a mantención externa</p>
+            </header>
 
-                <div class="form-actions">
-                    <button type="submit" id="submitBtn" class="btn-primary">
-                        <span class="btn-text">Enviar a Reparación</span>
-                        <div class="btn-loader"></div>
-                    </button>
-                    <button type="reset" class="btn-secondary">Limpiar</button>
-                </div>
-            </form>
-        </section>
+            <section class="glass-card">
+                <form id="repairForm" class="repair-form">
+                    <div class="form-grid">
+                        <!-- Ordem de Manutenção -->
+                        <div class="form-group">
+                            <label for="om">Orden de Mantención (OM)</label>
+                            <div class="input-wrapper">
+                                <input type="text" id="om" name="om" placeholder="Ej: 40012345" required>
+                            </div>
+                        </div>
 
-        <footer class="footer">
-            <p>&copy; 2026 CMPC | <a href="admin.html" style="color: var(--primary); text-decoration: none; font-weight: 500;">Panel Administrativo</a></p>
+                        <!-- Material con Autocomplete -->
+                        <div class="form-group">
+                            <label for="materialName">Nombre do Material</label>
+                            <div class="input-wrapper">
+                                <input type="text" id="materialName" name="materialName" list="materialsList" placeholder="Buscar material..." required>
+                                <datalist id="materialsList"></datalist>
+                                <button type="button" class="btn-clear" data-target="materialName" title="Limpiar">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Código del Material (Solo leitura) -->
+                        <div class="form-group">
+                            <label for="materialCode">Código del Material</label>
+                            <div class="input-wrapper">
+                                <input type="text" id="materialCode" name="materialCode" placeholder="Auto-completado" readonly>
+                            </div>
+                        </div>
+
+                        <!-- Unidad de Medida (Custom Select) -->
+                        <div class="form-group">
+                            <label for="uom">Unidad de Medida (UM)</label>
+                            <div class="custom-select" id="custom-uom">
+                                <div class="select-trigger">
+                                    <span class="selected-text">Seleccione...</span>
+                                    <div class="trigger-actions">
+                                        <button type="button" class="btn-clear" data-target="uom" title="Limpiar">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                                        </button>
+                                        <svg class="arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                    </div>
+                                </div>
+                                <div class="select-options">
+                                    <div class="option" data-value="UN">Unidad (UN)</div>
+                                    <div class="option" data-value="KG">Kilogramo (KG)</div>
+                                    <div class="option" data-value="M">Metro (M)</div>
+                                    <div class="option" data-value="L">Litro (L)</div>
+                                    <div class="option" data-value="PAR">Par (PAR)</div>
+                                    <div class="option" data-value="OTRO">Otro</div>
+                                </div>
+                                <select id="uom" name="uom" required style="display:none;">
+                                    <option value="" disabled selected>Seleccione...</option>
+                                    <option value="UN">UN</option><option value="KG">KG</option><option value="M">M</option><option value="L">L</option><option value="PAR">PAR</option><option value="OTRO">OTRO</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Categoría (Custom Select) -->
+                        <div class="form-group">
+                            <label for="category">Categoría del Equipo</label>
+                            <div class="custom-select" id="custom-category">
+                                <div class="select-trigger">
+                                    <span class="selected-text">Seleccione una categoría</span>
+                                    <div class="trigger-actions">
+                                        <button type="button" class="btn-clear" data-target="category" title="Limpiar">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                                        </button>
+                                        <svg class="arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                    </div>
+                                </div>
+                                <div class="select-options">
+                                    <div class="option" data-value="Motores">Motores</div>
+                                    <div class="option" data-value="Bombas">Bombas</div>
+                                    <div class="option" data-value="Redutores">Redutores</div>
+                                    <div class="option" data-value="Ventiladores">Ventiladores</div>
+                                    <div class="option" data-value="Eixos">Eixos</div>
+                                    <div class="option" data-value="Rotores">Rotores</div>
+                                    <div class="option" data-value="Misturadores">Misturadores</div>
+                                    <div class="option" data-value="Otros">Otros</div>
+                                </div>
+                                <select id="category" name="category" required style="display:none;">
+                                    <option value="" disabled selected>Seleccione...</option>
+                                    <option value="Motores">Motores</option><option value="Bombas">Bombas</option><option value="Redutores">Redutores</option><option value="Ventiladores">Ventiladores</option><option value="Eixos">Eixos</option><option value="Rotores">Rotores</option><option value="Misturadores">Misturadores</option><option value="Otros">Otros</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- TAG (Obrigatorio) -->
+                        <div class="form-group">
+                            <label for="tag">TAG / Identificación (Obligatorio)</label>
+                            <div class="input-wrapper">
+                                <input type="text" id="tag" name="tag" placeholder="Ej: 121-BC-001" required>
+                            </div>
+                        </div>
+
+                        <!-- Nº Inventario (Opcional) -->
+                        <div class="form-group">
+                            <label for="inventoryNumber">Nº de Inventario (Opcional)</label>
+                            <div class="input-wrapper">
+                                <input type="text" id="inventoryNumber" name="inventoryNumber" placeholder="Ej: 10004567">
+                            </div>
+                        </div>
+
+                        <!-- Valor Estimado Nuevo -->
+                        <div class="form-group">
+                            <label for="estimatedValue">Valor Estimado Equipo Nuevo (USD)</label>
+                            <div class="input-wrapper">
+                                <input type="number" id="estimatedValue" name="estimatedValue" min="0" step="0.01" placeholder="0.00" required title="Necesario para análise de viabilidade">
+                            </div>
+                        </div>
+
+                        <!-- Cantidad -->
+                        <div class="form-group">
+                            <label for="quantity">Cantidad</label>
+                            <div class="input-wrapper">
+                                <input type="number" id="quantity" name="quantity" min="0.01" step="any" placeholder="0.00" required>
+                            </div>
+                        </div>
+
+                        <!-- Peso -->
+                        <div class="form-group">
+                            <label for="weight">Peso Estimado (kg)</label>
+                            <div class="input-wrapper">
+                                <input type="number" id="weight" name="weight" min="0" step="0.01" placeholder="0.00" required>
+                            </div>
+                        </div>
+
+                        <!-- Local de Coleta -->
+                        <div class="form-group" style="grid-column: span 2;">
+                            <label for="collectionLocation">Local de Coleta / Ubicación del Material</label>
+                            <div class="input-wrapper">
+                                <textarea id="collectionLocation" name="collectionLocation" rows="2" placeholder="Descreva onde o material se encontra para coleta..." required></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Anexo (Opcional) -->
+                        <div class="form-group" style="grid-column: span 2;">
+                            <label for="attachment">Anexar Foto o Documento (Opcional)</label>
+                            <div class="file-upload-wrapper">
+                                <label for="attachment" class="file-upload-label">
+                                    <svg class="file-icon-svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                                    <span id="fileNameDisplay">Escolher archivo o arrastrar aquí...</span>
+                                </label>
+                                <input type="file" id="attachment" name="attachment" accept="image/*,.pdf,.doc,.docx" class="file-input-hidden">
+                            </div>
+                        </div>
+
+                        <!-- Proveedor con Autocomplete -->
+                        <div class="form-group">
+                            <label for="supplierName">Proveedor Sugerido</label>
+                            <div class="input-wrapper">
+                                <input type="text" id="supplierName" name="supplierName" list="suppliersList" placeholder="Sugerir proveedor..." required>
+                                <datalist id="suppliersList"></datalist>
+                                <button type="button" class="btn-clear" data-target="supplierName" title="Limpiar">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Código SAP Proveedor -->
+                        <div class="form-group">
+                            <label for="sapCode">Código SAP / ID (Sugerido)</label>
+                            <div class="input-wrapper">
+                                <input type="text" id="sapCode" name="sapCode" placeholder="ID Sugerido" readonly>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" id="submitBtn" class="btn-primary">
+                            <span class="btn-text">Enviar a Reparación</span>
+                            <div class="btn-loader"></div>
+                        </button>
+                        <button type="reset" class="btn-secondary">Limpiar</button>
+                    </div>
+                </form>
+            </section>
+
+            <footer class="footer">
+                <p>&copy; 2026 CMPC | <a href="admin.html" style="color: var(--primary); text-decoration: none; font-weight: 500;">Panel Administrativo</a></p>
+            </footer>
+        </div>
+    </main>
         </footer>
     </main>
 
