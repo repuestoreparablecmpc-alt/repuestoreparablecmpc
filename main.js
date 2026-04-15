@@ -1,19 +1,37 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 import firebaseConfig from "./src/firebase-config.js";
 import { notifyStage } from "./src/notifications.js";
 
 // Initialize Firebase
-let db, storage;
+let db;
 try {
     if (firebaseConfig.apiKey !== "PEGAR_AQUI") {
         const app = initializeApp(firebaseConfig);
         db = getFirestore(app);
-        storage = getStorage(app);
     }
 } catch (e) {
     console.warn("Firebase services not initialized.");
+}
+
+// Cloudinary config
+const CLOUDINARY_CLOUD = 'dxskr1ce2';
+const CLOUDINARY_PRESET = 'ml-default';
+
+async function uploadToCloudinary(file) {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', CLOUDINARY_PRESET);
+    formData.append('folder', 'repuesto-reparable');
+
+    const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/auto/upload`, {
+        method: 'POST',
+        body: formData
+    });
+
+    if (!res.ok) throw new Error('Cloudinary upload failed');
+    const json = await res.json();
+    return json.secure_url;
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -203,10 +221,8 @@ document.addEventListener('DOMContentLoaded', () => {
             let attachmentUrl = null;
             const attachmentFile = document.getElementById('attachment').files[0];
             
-            if (attachmentFile && storage) {
-                const storageRef = ref(storage, `attachments/${Date.now()}_${attachmentFile.name}`);
-                const snapshot = await uploadBytes(storageRef, attachmentFile);
-                attachmentUrl = await getDownloadURL(snapshot.ref);
+            if (attachmentFile) {
+                attachmentUrl = await uploadToCloudinary(attachmentFile);
             }
 
             if (db) {
