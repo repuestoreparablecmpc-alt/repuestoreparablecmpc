@@ -5,3 +5,6 @@
 [dev]
   command = "node server.js"
   port = 3000
+
+[context.production.environment]
+  SECRETS_SCAN_OMIT_KEYS = "EMAIL_USER"
