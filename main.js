@@ -55,10 +55,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Navigation between Landing and Form
     function initNavigation() {
-        const landingView = document.getElementById('view-landing');
-        const formView = document.getElementById('view-form');
-        const startBtn = document.getElementById('startBtn');
-        const backBtn = document.getElementById('backBtn');
+    const landingView = document.getElementById('view-landing');
+    const formView = document.getElementById('view-form');
+    const startBtn = document.getElementById('startBtn');
+    const backBtn = document.getElementById('backBtn');
 
         if (startBtn && backBtn) {
             startBtn.addEventListener('click', () => {
@@ -264,17 +264,21 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // Return to landing after pulse
             setTimeout(() => {
-                formView.style.display = 'none';
-                landingView.style.display = 'flex';
-                window.scrollTo({ top: 0, behavior: 'smooth' });
+                if (formView && landingView) {
+                    formView.style.display = 'none';
+                    landingView.style.display = 'flex';
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
             }, 2000);
             
         } catch (error) {
             console.error('Error al enviar solicitud:', error);
             alert("Hubo un error al enviar la solicitud.");
         } finally {
-            submitBtn.classList.remove('loading');
-            submitBtn.disabled = false;
+            if (submitBtn) {
+                submitBtn.classList.remove('loading');
+                submitBtn.disabled = false;
+            }
         }
     };
 
