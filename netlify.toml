@@ -1,0 +1,7 @@
+[build]
+  publish = "."
+  functions = "netlify/functions"
+
+[dev]
+  command = "node server.js"
+  port = 3000
