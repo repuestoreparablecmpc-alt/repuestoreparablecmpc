@@ -215,6 +215,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const formData = new FormData(repairForm);
         const data = Object.fromEntries(formData.entries());
+        delete data.attachment; // File objects não são aceitos pelo Firestore
         const submitBtn = repairForm.querySelector('button[type="submit"]');
 
         try {
